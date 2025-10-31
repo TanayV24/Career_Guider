@@ -4,11 +4,13 @@ import { api } from '../services/api';
 import { supabase } from '../services/supabase';
 import './AuthPage.css';
 
-function LoginPage() {
+function SignupPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    identifier: '', // Can be username or email
-    password: ''
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,7 @@ function LoginPage() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -27,12 +30,26 @@ function LoginPage() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.identifier.trim()) {
-      newErrors.identifier = 'Username or email is required';
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
     }
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -49,31 +66,26 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.login({
-        identifier: formData.identifier,
+      const response = await api.signup({
+        username: formData.username,
+        email: formData.email,
         password: formData.password
       });
 
       if (response.success) {
-        // Store user data
-        localStorage.setItem('userId', response.user.id);
-        localStorage.setItem('userName', response.user.username);
-        localStorage.setItem('userEmail', response.user.email);
-        localStorage.setItem('accessToken', response.session.access_token);
-        
-        // Redirect to mode selection
-        navigate('/mode-selection');
+        alert('Signup successful! Please login.');
+        navigate('/login');
       }
     } catch (error) {
       setErrors({ 
-        submit: error.response?.data?.error || 'Login failed. Please check your credentials.' 
+        submit: error.response?.data?.error || 'Signup failed. Please try again.' 
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -84,8 +96,8 @@ function LoginPage() {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Google login error:', error);
-      setErrors({ submit: 'Google login failed. Please try again.' });
+      console.error('Google signup error:', error);
+      setErrors({ submit: 'Google signup failed. Please try again.' });
     }
   };
 
@@ -93,24 +105,39 @@ function LoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Welcome Back! 👋</h1>
-          <p>Login to continue your career journey</p>
+          <h1>Create Account 🎯</h1>
+          <p>Join Career Guider to discover your perfect path</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {/* Username/Email */}
+          {/* Username */}
           <div className="form-group">
-            <label htmlFor="identifier">Username or Email</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
-              id="identifier"
-              name="identifier"
-              value={formData.identifier}
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
-              className={errors.identifier ? 'error' : ''}
-              placeholder="Enter username or email"
+              className={errors.username ? 'error' : ''}
+              placeholder="Choose a username"
             />
-            {errors.identifier && <span className="error-text">{errors.identifier}</span>}
+            {errors.username && <span className="error-text">{errors.username}</span>}
+          </div>
+
+          {/* Email */}
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'error' : ''}
+              placeholder="your.email@example.com"
+            />
+            {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
 
           {/* Password */}
@@ -123,9 +150,24 @@ function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? 'error' : ''}
-              placeholder="Enter your password"
+              placeholder="Minimum 6 characters"
             />
             {errors.password && <span className="error-text">{errors.password}</span>}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={errors.confirmPassword ? 'error' : ''}
+              placeholder="Re-enter your password"
+            />
+            {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
           </div>
 
           {/* Submit Error */}
@@ -137,7 +179,7 @@ function LoginPage() {
 
           {/* Submit Button */}
           <button type="submit" className="auth-button primary" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
 
@@ -146,11 +188,11 @@ function LoginPage() {
           <span>OR</span>
         </div>
 
-        {/* Google Login */}
+        {/* Google Signup */}
         <button 
           type="button" 
           className="auth-button google"
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleSignup}
         >
           <img 
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
@@ -160,16 +202,16 @@ function LoginPage() {
           Continue with Google
         </button>
 
-        {/* Signup Link */}
+        {/* Login Link */}
         <div className="auth-footer">
           <p>
-            Don't have an account?{' '}
+            Already have an account?{' '}
             <button 
               type="button"
               className="link-button" 
-              onClick={() => navigate('/signup')}
+              onClick={() => navigate('/login')}
             >
-              Sign up here
+              Login here
             </button>
           </p>
         </div>
@@ -178,4 +220,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignupPage;

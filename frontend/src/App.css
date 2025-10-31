@@ -49,3 +49,48 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light Theme (Default) */
+:root[data-theme="light"] {
+  --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --navbar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --navbar-text: #ffffff;
+  --button-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --button-hover: #5a67d8;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme */
+:root[data-theme="dark"] {
+  --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --bg-secondary: #0f0f1e;
+  --bg-card: #1a1a2e;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #2d3748;
+  --navbar-bg: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+  --navbar-text: #e2e8f0;
+  --button-primary: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  --button-hover: #4a5568;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
