@@ -1,0 +1,37 @@
+.quote-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.quote-content {
+  text-align: center;
+  color: white;
+  max-width: 600px;
+  padding: 40px;
+}
+
+.quote-icon {
+  font-size: 80px;
+  margin-bottom: 30px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.quote-text {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.quote-subtitle {
+  font-size: 20px;
+  opacity: 0.9;
+}

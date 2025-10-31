@@ -1,0 +1,80 @@
+.mode-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.mode-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 60px;
+}
+
+.mode-header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.mode-header p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.mode-cards {
+  display: flex;
+  gap: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  width: 280px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.mode-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.mode-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.mode-card h2 {
+  font-size: 28px;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.mode-card p {
+  color: #64748b;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.mode-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-button:hover {
+  transform: scale(1.05);
+}
