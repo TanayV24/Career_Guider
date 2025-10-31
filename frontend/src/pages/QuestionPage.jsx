@@ -1,32 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 import './QuestionPage.css';
+
+const MOTIVATIONAL_QUOTES = [
+  "Your career is a journey, not a destination! 🚀",
+  "Dream big, work hard, stay focused! 💪",
+  "The future belongs to those who believe in their dreams! ✨",
+  "Success is not final, failure is not fatal! 🌟",
+  "Believe in yourself and magic will happen! 🎯"
+];
 
 function QuestionPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  
+  const [showMotivational, setShowMotivational] = useState(true);
+  const [motivationalQuote] = useState(
+    MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]
+  );
 
-  const userId = localStorage.getItem('userId');
+  const userId = localStorage.getItem('userId') || 'guest_' + Date.now();
   const selectedMode = localStorage.getItem('selectedMode') || 'ssc';
 
   useEffect(() => {
+    localStorage.setItem('userId', userId);
     loadQuestions();
+
+    const timer = setTimeout(() => {
+      setShowMotivational(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('currentQuestion', currentIndex + 1);
+  }, [currentIndex]);
 
   const loadQuestions = async () => {
     try {
       const data = await api.getQuestions(selectedMode);
-      console.log('Loaded questions:', data); // Debug
+      console.log('✅ Questions loaded:', data.length);
       setQuestions(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to load questions:', error);
+      console.error('❌ Load error:', error);
       setLoading(false);
     }
   };
@@ -44,22 +70,20 @@ function QuestionPage() {
     setAnalyzing(true);
 
     try {
-      // Analyze with NLP (but don't wait for it)
+      console.log('📝 Submitting:', answer);
+
       api.analyzeAnswer(answer).then(analysis => {
-        console.log('NLP Analysis:', analysis);
+        console.log('🧠 NLP Analysis:', analysis);
       }).catch(err => {
-        console.error('Analysis error:', err);
+        console.error('Analysis error (non-critical):', err);
       });
 
-      // Submit answer
       const result = await api.submitAnswer(userId, questions[currentIndex].id, answer);
-      console.log('Submit result:', result);
+      console.log('✅ Submitted successfully');
 
-      // Wait just a moment for visual feedback
+      setScore(result.score);
+
       setTimeout(() => {
-        setScore(score + 20);
-        
-        // Move to next question or finish
         if (currentIndex < questions.length - 1) {
           setCurrentIndex(currentIndex + 1);
           setAnswer('');
@@ -67,11 +91,11 @@ function QuestionPage() {
           navigate('/results');
         }
         setAnalyzing(false);
-      }, 800); // Reduced to 0.8 seconds
+      }, 500);
 
     } catch (error) {
-      console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      console.error('❌ Error:', error);
+      alert('Error: ' + error.message);
       setAnalyzing(false);
     }
   };
@@ -86,6 +110,7 @@ function QuestionPage() {
   if (loading) {
     return (
       <div className="question-container">
+        <div className="animated-background"></div>
         <div className="loading">Loading questions...</div>
       </div>
     );
@@ -94,7 +119,11 @@ function QuestionPage() {
   if (questions.length === 0) {
     return (
       <div className="question-container">
-        <div className="error">No questions available</div>
+        <div className="animated-background"></div>
+        <div className="error">
+          <p>No questions found!</p>
+          <button onClick={() => navigate('/')}>Go Back</button>
+        </div>
       </div>
     );
   }
@@ -103,32 +132,52 @@ function QuestionPage() {
 
   return (
     <div className="question-container">
+      {/* Animated Background */}
+      <div className="animated-background">
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+        <div className="floating-shape shape-3"></div>
+        <div className="floating-shape shape-4"></div>
+        <div className="floating-shape shape-5"></div>
+      </div>
+
+      {/* Motivational Overlay */}
+      {showMotivational && (
+        <div className="motivational-overlay">
+          <div className="motivational-content">
+            <div className="motivational-icon">💡</div>
+            <h2 className="motivational-quote">{motivationalQuote}</h2>
+            <p className="motivational-subtitle">Let's begin your journey!</p>
+          </div>
+        </div>
+      )}
+
+      {/* Question Card */}
       <div className="question-card">
-        {/* Header */}
         <div className="question-header">
-          <h1>Career Guider 🎯</h1>
-          <div className="score-badge">Score: {score}</div>
+          <h1 className="header-title">Career Guider 🎯</h1>
+          <div className="score-badge">
+            <span className="score-label">Score</span>
+            <span className="score-value">{score}</span>
+          </div>
         </div>
 
-        {/* Progress */}
         <div className="progress-section">
           <div className="progress-text">
             Question {currentIndex + 1} of {questions.length}
           </div>
-          <div className="progress-bar">
+          <div className="progress-bar-container">
             <div 
-              className="progress-fill" 
+              className="progress-bar-fill" 
               style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
         </div>
 
-        {/* Question */}
         <div className="question-content">
-          <div className="question-number">Q{currentIndex + 1}</div>
+          <div className="question-number-badge">Q{currentIndex + 1}</div>
           <h2 className="question-text">{currentQuestion.text}</h2>
 
-          {/* Answer Input */}
           {currentQuestion.type === 'choice' && currentQuestion.options ? (
             <div className="choices">
               {currentQuestion.options.map((option, idx) => (
@@ -138,7 +187,10 @@ function QuestionPage() {
                   onClick={() => handleAnswerChange(option)}
                   disabled={analyzing}
                 >
-                  {option}
+                  <span className="choice-icon">
+                    {answer === option ? '✓' : String.fromCharCode(65 + idx)}
+                  </span>
+                  <span className="choice-text">{option}</span>
                 </button>
               ))}
             </div>
@@ -154,7 +206,6 @@ function QuestionPage() {
           )}
         </div>
 
-        {/* Actions */}
         <div className="question-actions">
           {currentIndex > 0 && (
             <button 
@@ -170,20 +221,28 @@ function QuestionPage() {
             onClick={handleSubmit}
             disabled={analyzing || !answer.trim()}
           >
-            {analyzing ? 'Processing...' : currentIndex === questions.length - 1 ? 'Finish' : 'Next →'}
+            {analyzing ? (
+              <>
+                <span className="button-spinner"></span>
+                Processing...
+              </>
+            ) : currentIndex === questions.length - 1 ? (
+              '✓ Finish'
+            ) : (
+              'Next →'
+            )}
           </button>
         </div>
-
-        {/* Analyzing Overlay (simplified) */}
-        {analyzing && (
-          <div className="analyzing-overlay">
-            <div className="analyzing-content">
-              <div className="analyzing-spinner"></div>
-              <p>Processing...</p>
-            </div>
-          </div>
-        )}
       </div>
+
+      {analyzing && (
+        <div className="analyzing-overlay">
+          <div className="analyzing-content">
+            <div className="analyzing-spinner"></div>
+            <p>Analyzing with NLP... 🧠</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

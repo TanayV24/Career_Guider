@@ -3,39 +3,78 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 
 export const api = {
-  login: async (userData) => {
+  // Authentication
+  signup: async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, userData);
-      console.log('Login response:', response.data);  // Debug log
+      const response = await axios.post(`${API_URL}/auth/signup`, userData);
       return response.data;
     } catch (error) {
-      console.error('Login API error:', error.response?.data || error.message);
+      console.error('Signup error:', error.response?.data || error.message);
       throw error;
     }
   },
-  
+
+  login: async (credentials) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, credentials);
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  googleAuth: async () => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/google`);
+      return response.data;
+    } catch (error) {
+      console.error('Google auth error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  googleCallback: async (tokens) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/google/callback`, tokens);
+      return response.data;
+    } catch (error) {
+      console.error('Google callback error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  logout: async () => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/logout`);
+      return response.data;
+    } catch (error) {
+      console.error('Logout error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  // Questions
   getQuestions: async (mode) => {
     try {
       const response = await axios.get(`${API_URL}/questions/${mode}`);
-      console.log('Questions response:', response.data);  // Debug log
       return response.data;
     } catch (error) {
-      console.error('Questions API error:', error.response?.data || error.message);
+      console.error('Questions error:', error.response?.data || error.message);
       throw error;
     }
   },
-  
+
   analyzeAnswer: async (answer) => {
     try {
       const response = await axios.post(`${API_URL}/analyze`, { answer });
-      console.log('Analysis response:', response.data);  // Debug log
       return response.data;
     } catch (error) {
-      console.error('Analyze API error:', error.response?.data || error.message);
+      console.error('Analyze error:', error.response?.data || error.message);
       throw error;
     }
   },
-  
+
   submitAnswer: async (userId, questionId, answer) => {
     try {
       const response = await axios.post(`${API_URL}/submit-answer`, {
@@ -45,17 +84,17 @@ export const api = {
       });
       return response.data;
     } catch (error) {
-      console.error('Submit API error:', error.response?.data || error.message);
+      console.error('Submit answer error:', error.response?.data || error.message);
       throw error;
     }
   },
-  
+
   getRecommendations: async (userId) => {
     try {
       const response = await axios.post(`${API_URL}/recommend`, { user_id: userId });
       return response.data;
     } catch (error) {
-      console.error('Recommend API error:', error.response?.data || error.message);
+      console.error('Recommendations error:', error.response?.data || error.message);
       throw error;
     }
   }

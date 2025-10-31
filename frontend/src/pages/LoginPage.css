@@ -1,3 +1,25 @@
+/* Add this at the very top of each file */
+.mode-container,
+.results-container,
+.login-container {
+  background: var(--bg-primary);
+}
+
+.mode-card,
+.results-card,
+.login-card {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* For borders */
+.mode-card,
+.results-card,
+.login-card {
+  border: 1px solid var(--border-color);
+}
+
+
 .login-container {
   min-height: 100vh;
   display: flex;
