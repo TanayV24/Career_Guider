@@ -4,6 +4,8 @@ flask-bcrypt==1.0.1
 python-dotenv==1.0.0
 Werkzeug==3.0.0
 requests==2.31.0
+datetime
 
 # Just install supabase - it handles dependencies automatically
 supabase==1.0.3
+
