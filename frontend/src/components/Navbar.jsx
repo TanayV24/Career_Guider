@@ -60,6 +60,23 @@ function Navbar() {
     setShowUserDropdown(false);
   };
 
+  const handleHomeClick = async () => {
+    // If on question page, ask to save progress
+    if (location.pathname === '/questions') {
+      const confirmLeave = window.confirm(
+        '⚠️ Your progress will be saved.\n\nDo you want to leave and return to dashboard?'
+      );
+      
+      if (confirmLeave) {
+        // Progress is auto-saved, just navigate
+        navigate('/dashboard');
+      }
+    } else {
+      // Not on questions page, go directly to dashboard
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <>
       <nav className="navbar">
@@ -75,7 +92,7 @@ function Navbar() {
             {/* Home Button */}
             <button 
               className="nav-btn" 
-              onClick={() => handleComingSoon('Home Page')}
+              onClick={() => handleHomeClick()}
             >
               🏠 Home
             </button>
