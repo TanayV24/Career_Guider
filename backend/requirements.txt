@@ -8,4 +8,3 @@ datetime
 
 # Just install supabase - it handles dependencies automatically
 supabase==1.0.3
-

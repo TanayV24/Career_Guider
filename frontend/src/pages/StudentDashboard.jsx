@@ -6,7 +6,7 @@ import './static/StudentDashboard.css';
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('home'); // home, history, profile, recommendations
+  const [activeTab, setActiveTab] = useState('home');
   const [stats, setStats] = useState({
     total_quizzes: 0,
     completed_quizzes: 0,
@@ -48,17 +48,14 @@ const StudentDashboard = () => {
 
   const fetchDashboardData = async (userId) => {
     try {
-      // Fetch stats
       const statsRes = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/stats?user_id=${userId}`);
       setStats(statsRes.data.stats);
 
-      // Fetch quiz history
       const historyRes = await axios.get(`${process.env.REACT_APP_API_URL}/quiz/history?user_id=${userId}`);
       setQuizHistory(historyRes.data.history);
       const incomplete = historyRes.data.history.find(q => !q.is_completed);
       setIncompleteSession(incomplete);
 
-      // Fetch profile
       const profileRes = await axios.get(`${process.env.REACT_APP_API_URL}/profile?user_id=${userId}`);
       if (profileRes.data.success) {
         setProfile(profileRes.data.profile);
@@ -117,7 +114,6 @@ const StudentDashboard = () => {
 
   return (
     <div className="student-dashboard">
-      {/* Welcome Header */}
       <div className="dashboard-header">
         <div className="welcome-section">
           <div className="user-avatar">
@@ -130,7 +126,6 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      {/* Tabs Navigation */}
       <div className="tabs-container">
         <button 
           className={`tab ${activeTab === 'home' ? 'active' : ''}`}
@@ -165,12 +160,9 @@ const StudentDashboard = () => {
         </button>
       </div>
 
-      {/* Tab Content */}
       <div className="tab-content">
-        {/* HOME TAB */}
         {activeTab === 'home' && (
           <div className="home-tab">
-            {/* Stats Cards */}
             <div className="stats-grid">
               <div className="stat-card">
                 <div className="stat-icon">📊</div>
@@ -202,7 +194,6 @@ const StudentDashboard = () => {
               </div>
             </div>
 
-            {/* Resume Quiz Alert */}
             {incompleteSession && (
               <div className="resume-alert">
                 <div className="alert-content">
@@ -213,21 +204,19 @@ const StudentDashboard = () => {
                   </div>
                   <button 
                     className="btn btn-primary" 
-                    onClick={() => navigate('/questions', { 
-                      state: { 
-                        sessionId: incompleteSession.id,
-                        mode: incompleteSession.mode,
-                        resume: true
-                      } 
-                    })}
+                    onClick={() => {
+                      localStorage.setItem('resumeSessionId', incompleteSession.id);
+                      localStorage.setItem('selectedMode', incompleteSession.mode);
+                      localStorage.setItem('classLevel', incompleteSession.class_level);
+                      navigate('/questions');
+                    }}
                   >
-                    Continue Quiz
+                    Continue Quiz →
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Action Cards */}
             <div className="dashboard-grid">
               <div className="dashboard-card take-quiz-card" onClick={() => navigate('/mode-selection')}>
                 <div className="card-icon">🎯</div>
@@ -258,7 +247,6 @@ const StudentDashboard = () => {
               </div>
             </div>
 
-            {/* Quick Tips */}
             <div className="tips-section">
               <h3>💡 Quick Tips</h3>
               <div className="tips-grid">
@@ -279,7 +267,6 @@ const StudentDashboard = () => {
           </div>
         )}
 
-        {/* QUIZ HISTORY TAB */}
         {activeTab === 'history' && (
           <div className="history-tab">
             <div className="history-header">
@@ -298,66 +285,72 @@ const StudentDashboard = () => {
               </div>
             ) : (
               <div className="history-grid">
-                {quizHistory.map((quiz) => (
-                  <div key={quiz.id} className={`history-card ${quiz.is_completed ? 'completed' : 'incomplete'}`}>
-                    <div className="history-header-row">
-                      <div className="quiz-mode-badge">{quiz.mode.toUpperCase()}</div>
-                      <div className={`status-badge ${quiz.is_completed ? 'completed' : 'in-progress'}`}>
-                        {quiz.is_completed ? '✅ Completed' : '⏳ In Progress'}
-                      </div>
-                    </div>
-
-                    <div className="history-content">
-                      <div className="history-info">
-                        <p className="quiz-class">{quiz.class_level || 'General'}</p>
-                        <p className="quiz-date">Started: {formatDate(quiz.created_at)}</p>
-                        {quiz.completed_at && (
-                          <p className="quiz-date">Completed: {formatDate(quiz.completed_at)}</p>
-                        )}
-                      </div>
-
-                      <div className="history-stats">
-                        <div className="stat-item">
-                          <span className="stat-label">Progress</span>
-                          <span className="stat-value">{quiz.current_question}/{quiz.total_questions}</span>
+                {quizHistory.map((quiz) => {
+                  const answersObj = typeof quiz.answers === 'string' 
+                    ? JSON.parse(quiz.answers || '{}') 
+                    : (quiz.answers || {});
+                  const progressCount = quiz.current_question || 0;
+                  
+                  return (
+                    <div key={quiz.id} className={`history-card ${quiz.is_completed ? 'completed' : 'incomplete'}`}>
+                      <div className="history-header-row">
+                        <div className="quiz-mode-badge">{quiz.mode.toUpperCase()}</div>
+                        <div className={`status-badge ${quiz.is_completed ? 'completed' : 'in-progress'}`}>
+                          {quiz.is_completed ? '✅ Completed' : '⏳ In Progress'}
                         </div>
-                        {quiz.is_completed && (
+                      </div>
+
+                      <div className="history-content">
+                        <div className="history-info">
+                          <p className="quiz-class">{quiz.class_level || 'General'}</p>
+                          <p className="quiz-date">Started: {formatDate(quiz.created_at)}</p>
+                          {quiz.completed_at && (
+                            <p className="quiz-date">Completed: {formatDate(quiz.completed_at)}</p>
+                          )}
+                        </div>
+
+                        <div className="history-stats">
                           <div className="stat-item">
-                            <span className="stat-label">Score</span>
-                            <span className="stat-value score">{quiz.score}%</span>
+                            <span className="stat-label">Progress</span>
+                            <span className="stat-value">{progressCount}/14</span>
                           </div>
+                          {quiz.is_completed && (
+                            <div className="stat-item">
+                              <span className="stat-label">Score</span>
+                              <span className="stat-value score">{quiz.score}%</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="history-actions">
+                        {!quiz.is_completed ? (
+                          <button 
+                            className="btn btn-sm btn-primary"
+                            onClick={() => {
+                              console.log('🔍 Session ID being stored:', quiz.id); // DEBUG
+                              localStorage.setItem('resumeSessionId', String(quiz.id).trim());
+                              localStorage.setItem('selectedMode', quiz.mode);
+                              localStorage.setItem('classLevel', quiz.class_level);
+                              navigate('/questions');
+                            }}
+                          >
+                            Continue Quiz →
+                          </button>
+                        ) : (
+                          <button className="btn btn-sm btn-secondary" onClick={() => setActiveTab('recommendations')}>
+                            View Recommendations
+                          </button>
                         )}
                       </div>
                     </div>
-
-                    <div className="history-actions">
-                      {!quiz.is_completed ? (
-                        <button 
-                          className="btn btn-sm btn-primary"
-                          onClick={() => navigate('/questions', { 
-                            state: { 
-                              sessionId: quiz.id,
-                              mode: quiz.mode,
-                              resume: true
-                            } 
-                          })}
-                        >
-                          Continue Quiz
-                        </button>
-                      ) : (
-                        <button className="btn btn-sm btn-secondary" onClick={() => setActiveTab('recommendations')}>
-                          View Recommendations
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* RECOMMENDATIONS TAB */}
         {activeTab === 'recommendations' && (
           <div className="recommendations-tab">
             <div className="recommendations-header">
@@ -376,7 +369,6 @@ const StudentDashboard = () => {
           </div>
         )}
 
-        {/* PROFILE TAB */}
         {activeTab === 'profile' && (
           <div className="profile-tab">
             <div className="profile-header-section">
@@ -385,7 +377,6 @@ const StudentDashboard = () => {
             </div>
 
             <form className="profile-form" onSubmit={handleProfileSubmit}>
-              {/* Basic Info */}
               <div className="form-section">
                 <h3>📋 Basic Information</h3>
                 <div className="form-grid">
@@ -454,7 +445,6 @@ const StudentDashboard = () => {
                 </div>
               </div>
 
-              {/* Education */}
               <div className="form-section">
                 <h3>🎓 Education Details</h3>
                 <div className="form-group full-width">
@@ -471,7 +461,6 @@ const StudentDashboard = () => {
                 </div>
               </div>
 
-              {/* Location */}
               <div className="form-section">
                 <h3>📍 Location</h3>
                 <div className="form-grid">

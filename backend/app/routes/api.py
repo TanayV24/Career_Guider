@@ -94,6 +94,137 @@ def login():
     """User login with email/username and password"""
     try:
         data = request.json
+        print(f"📥 Login attempt with data: {data}")
+        
+        identifier = data.get('identifier')
+        password = data.get('password')
+        
+        print(f"🔑 Identifier: {identifier}, Password length: {len(password) if password else 0}")
+        
+        if not all([identifier, password]):
+            print("❌ Missing fields")
+            return jsonify({'success': False, 'error': 'All fields required'}), 400
+        
+        # Find user by email or username
+        user_query = supabase.table('users').select('*')
+        if '@' in identifier:
+            print(f"🔍 Searching by email: {identifier}")
+            user_query = user_query.eq('email', identifier)
+        else:
+            print(f"🔍 Searching by username: {identifier}")
+            user_query = user_query.eq('username', identifier)
+        
+        user_response = user_query.execute()
+        print(f"👤 Users found: {len(user_response.data)}")
+        
+        if not user_response.data:
+            print("❌ User not found")
+            return jsonify({'success': False, 'error': 'Invalid login credentials'}), 401
+        
+        user = user_response.data[0]
+        print(f"✅ User found: {user.get('username')} ({user.get('email')})")
+        
+        # Get password hash
+        password_hash = user.get('passwordhash') or user.get('password_hash')
+        print(f"🔐 Password hash exists: {bool(password_hash)}")
+        
+        if not password_hash:
+            print("❌ No password hash found")
+            return jsonify({'success': False, 'error': 'Password not set'}), 401
+        
+        # Verify password
+        password_valid = bcrypt.check_password_hash(password_hash, password)
+        print(f"🔓 Password valid: {password_valid}")
+        
+        if not password_valid:
+            print("❌ Password mismatch")
+            return jsonify({'success': False, 'error': 'Invalid login credentials'}), 401
+        
+        print("✅ Login successful!")
+        return jsonify({
+            'success': True,
+            'message': 'Login successful!',
+            'user': {
+                'id': user['id'],
+                'username': user['username'],
+                'email': user['email'],
+                'fullname': user.get('fullname', ''),
+                'created_at': user.get('created_at', '')
+            }
+        })
+            
+    except Exception as e:
+        print(f"❌ Login error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+    """User login with email/username and password"""
+    try:
+        data = request.json
+        identifier = data.get('identifier')  # Can be username or email
+        password = data.get('password')
+        
+        if not all([identifier, password]):
+            return jsonify({'success': False, 'error': 'All fields required'}), 400
+        
+        # Find user by email or username
+        user_query = supabase.table('users').select('*')
+        if '@' in identifier:
+            user_query = user_query.eq('email', identifier)
+        else:
+            user_query = user_query.eq('username', identifier)
+        
+        user_response = user_query.execute()
+        
+        if not user_response.data:
+            return jsonify({'success': False, 'error': 'Invalid login credentials'}), 401
+        
+        user = user_response.data[0]
+        
+        # FIX: Use correct column name (passwordhash, not password_hash)
+        password_hash = user.get('passwordhash') or user.get('password_hash')
+        
+        if not password_hash:
+            return jsonify({'success': False, 'error': 'Password not set'}), 401
+        
+        # Verify password
+        if not bcrypt.check_password_hash(password_hash, password):
+            return jsonify({'success': False, 'error': 'Invalid login credentials'}), 401
+        
+        # Sign in with Supabase Auth
+        auth_response = supabase.auth.sign_in_with_password({
+            'email': user['email'],
+            'password': password
+        })
+        
+        if auth_response.user:
+            return jsonify({
+                'success': True,
+                'message': 'Login successful!',
+                'user': {
+                    'id': user['id'],
+                    'username': user['username'],
+                    'email': user['email']
+                },
+                'session': {
+                    'access_token': auth_response.session.access_token,
+                    'refresh_token': auth_response.session.refresh_token
+                }
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Login failed'}), 500
+            
+    except Exception as e:
+        print(f"Login error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+    """User login with email/username and password"""
+    try:
+        data = request.json
         identifier = data.get('identifier')  # Can be username or email
         password = data.get('password')
         
