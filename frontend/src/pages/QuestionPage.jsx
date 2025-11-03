@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
-import './QuestionPage.css';
+import './static/QuestionPage.css';
 
 const MOTIVATIONAL_QUOTES = [
   "Your career is a journey, not a destination! 🚀",
@@ -21,6 +21,8 @@ function QuestionPage() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
   
   const [showMotivational, setShowMotivational] = useState(true);
   const [motivationalQuote] = useState(
@@ -29,10 +31,11 @@ function QuestionPage() {
 
   const userId = localStorage.getItem('userId') || 'guest_' + Date.now();
   const selectedMode = localStorage.getItem('selectedMode') || 'ssc';
+  const classLevel = localStorage.getItem('classLevel') || '10';
 
   useEffect(() => {
     localStorage.setItem('userId', userId);
-    loadQuestions();
+    initializeQuiz();
 
     const timer = setTimeout(() => {
       setShowMotivational(false);
@@ -41,18 +44,40 @@ function QuestionPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    sessionStorage.setItem('currentQuestion', currentIndex + 1);
-  }, [currentIndex]);
-
-  const loadQuestions = async () => {
+  const initializeQuiz = async () => {
     try {
+      // Start or resume quiz session
+      const startResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          mode: selectedMode,
+          class_level: classLevel
+        })
+      });
+      
+      const startData = await startResponse.json();
+      
+      if (startData.success) {
+        setSessionId(startData.session_id);
+        setCurrentIndex(startData.current_question || 0);
+        setIsSaved(startData.is_resume || false);
+        
+        console.log(startData.is_resume ? 
+          '✅ Resuming quiz session' : 
+          '✅ New quiz session started'
+        );
+      }
+      
+      // Load questions
       const data = await api.getQuestions(selectedMode);
-      console.log('✅ Questions loaded:', data.length);
       setQuestions(data);
       setLoading(false);
+      
     } catch (error) {
-      console.error('❌ Load error:', error);
+      console.error('❌ Initialize error:', error);
+      alert('Error starting quiz. Please try again.');
       setLoading(false);
     }
   };
@@ -70,33 +95,70 @@ function QuestionPage() {
     setAnalyzing(true);
 
     try {
-      console.log('📝 Submitting:', answer);
+      console.log('📝 Submitting answer:', answer);
 
-      api.analyzeAnswer(answer).then(analysis => {
-        console.log('🧠 NLP Analysis:', analysis);
-      }).catch(err => {
-        console.error('Analysis error (non-critical):', err);
+      // Save answer to database
+      const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/save-progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          question_index: currentIndex,
+          question_id: questions[currentIndex].id,
+          answer: answer
+        })
       });
 
-      const result = await api.submitAnswer(userId, questions[currentIndex].id, answer);
-      console.log('✅ Submitted successfully');
+      const saveData = await saveResponse.json();
+      
+      if (saveData.success) {
+        console.log('✅ Answer saved to database');
+        
+        // Update saved status
+        if (saveData.is_saved && !isSaved) {
+          setIsSaved(true);
+          console.log('✅ Session marked as saved (2+ questions answered)');
+        }
+      }
 
-      setScore(result.score);
+      // NLP Analysis (non-blocking)
+      api.analyzeAnswer(answer).catch(err => {
+        console.error('NLP analysis error (non-critical):', err);
+      });
 
       setTimeout(() => {
         if (currentIndex < questions.length - 1) {
           setCurrentIndex(currentIndex + 1);
           setAnswer('');
         } else {
-          navigate('/results');
+          completeQuiz();
         }
         setAnalyzing(false);
       }, 500);
 
     } catch (error) {
-      console.error('❌ Error:', error);
-      alert('Error: ' + error.message);
+      console.error('❌ Submit error:', error);
+      alert('Error saving answer: ' + error.message);
       setAnalyzing(false);
+    }
+  };
+
+  const completeQuiz = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL}/quiz/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          score: score
+        })
+      });
+      
+      console.log('✅ Quiz completed');
+      navigate('/results');
+    } catch (error) {
+      console.error('Error completing quiz:', error);
+      navigate('/results');
     }
   };
 
@@ -104,6 +166,12 @@ function QuestionPage() {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
       setAnswer('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && answer.trim()) {
+      handleSubmit();
     }
   };
 
@@ -160,6 +228,9 @@ function QuestionPage() {
             <span className="score-label">Score</span>
             <span className="score-value">{score}</span>
           </div>
+          {isSaved && (
+            <div className="saved-indicator">✓ Saved</div>
+          )}
         </div>
 
         <div className="progress-section">
@@ -178,7 +249,7 @@ function QuestionPage() {
           <div className="question-number-badge">Q{currentIndex + 1}</div>
           <h2 className="question-text">{currentQuestion.text}</h2>
 
-          {currentQuestion.type === 'choice' && currentQuestion.options ? (
+          {(currentQuestion.type === 'choice' || currentQuestion.type === 'age_choice') && currentQuestion.options ? (
             <div className="choices">
               {currentQuestion.options.map((option, idx) => (
                 <button
@@ -196,13 +267,15 @@ function QuestionPage() {
             </div>
           ) : (
             <textarea
-              className="text-input"
-              placeholder="Type your answer here..."
+              className="answer-textarea"
               value={answer}
               onChange={(e) => handleAnswerChange(e.target.value)}
-              rows={4}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your answer and press Enter..."
+              rows="4"
+              autoFocus
               disabled={analyzing}
-            />
+            ></textarea>
           )}
         </div>
 

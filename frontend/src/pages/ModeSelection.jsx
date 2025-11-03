@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './ModeSelection.css';
+import './static/ModeSelection.css';
 
 function ModeSelection() {
   const navigate = useNavigate();
@@ -31,11 +31,22 @@ function ModeSelection() {
     setShowClassSelection(true);
   };
 
-  const handleClassSelect = (classLevel) => {
-    localStorage.setItem('selectedMode', 'ssc');
-    localStorage.setItem('classLevel', classLevel);
-    navigate('/questions');
+ const handleClassSelect = (classLevel) => {
+  // Store in correct format for QuestionPage
+  const modeSelection = {
+    mode: 'ssc',
+    class_level: classLevel
   };
+  
+  localStorage.setItem('modeSelection', JSON.stringify(modeSelection));
+  
+  // Also store individual values (for backward compatibility)
+  localStorage.setItem('selectedMode', 'ssc');
+  localStorage.setItem('classLevel', classLevel);
+  
+  navigate('/questions');
+};
+
 
   return (
     <div className="mode-container">

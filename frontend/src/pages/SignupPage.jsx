@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { supabase } from '../services/supabase';
-import './AuthPage.css';
+import './static/AuthPage.css';
 
 function SignupPage() {
   const navigate = useNavigate();

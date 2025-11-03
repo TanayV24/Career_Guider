@@ -7,40 +7,55 @@ import AuthCallback from './pages/AuthCallback';
 import ModeSelection from './pages/ModeSelection';
 import QuestionPage from './pages/QuestionPage';
 import ResultsPage from './pages/ResultsPage';
+import StudentDashboard from './pages/StudentDashboard'; // ← ADD THIS
 import Navbar from './components/Navbar';
 import './App.css';
 
 function AppContent() {
   const isLoggedIn = localStorage.getItem('userId');
   const location = useLocation();
-
-  const showNavbar = isLoggedIn && ['/mode-selection', '/questions', '/results'].includes(location.pathname);
+  
+  const showNavbar = isLoggedIn && [
+    '/dashboard',        // ← ADD THIS
+    '/mode-selection', 
+    '/questions', 
+    '/results'
+  ].includes(location.pathname);
 
   return (
     <>
       {showNavbar && <Navbar />}
-      
       <Routes>
+        {/* Home route - redirect to dashboard if logged in */}
         <Route 
           path="/" 
-          element={isLoggedIn ? <Navigate to="/mode-selection" replace /> : <Navigate to="/login" replace />} 
+          element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
         />
+        
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        
+        {/* Protected routes */}
+        <Route 
+          path="/dashboard" 
+          element={isLoggedIn ? <StudentDashboard /> : <Navigate to="/login" />} 
+        />
         <Route 
           path="/mode-selection" 
-          element={isLoggedIn ? <ModeSelection /> : <Navigate to="/login" replace />} 
+          element={isLoggedIn ? <ModeSelection /> : <Navigate to="/login" />} 
         />
         <Route 
           path="/questions" 
-          element={isLoggedIn ? <QuestionPage /> : <Navigate to="/login" replace />} 
+          element={isLoggedIn ? <QuestionPage /> : <Navigate to="/login" />} 
         />
         <Route 
           path="/results" 
-          element={isLoggedIn ? <ResultsPage /> : <Navigate to="/login" replace />} 
+          element={isLoggedIn ? <ResultsPage /> : <Navigate to="/login" />} 
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
   );

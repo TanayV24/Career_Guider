@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 import sys
 import os
 
@@ -9,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'db'))
 from nlp_engine import SimpleNLP
 from question_bank import SSC_QUESTIONS, HSC_QUESTIONS
 from supabase_client import get_supabase
+
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 supabase = get_supabase()
@@ -283,3 +285,254 @@ def get_recommendations():
 @bp.route('/test', methods=['GET'])
 def test():
     return jsonify({'status': 'Backend working with Supabase Auth!', 'database': 'connected'})
+
+# Add these new routes to your existing api.py
+
+@bp.route('/profile', methods=['GET'])
+def get_profile():
+    """Get user profile"""
+    try:
+        user_id = request.args.get('user_id')
+        
+        supabase = get_supabase()
+        response = supabase.table('users').select('*').eq('id', user_id).execute()
+        
+        if response.data:
+            user = response.data[0]
+            return jsonify({
+                'success': True,
+                'profile': {
+                    'id': user['id'],
+                    'username': user['username'],
+                    'email': user['email'],
+                    'phone': user.get('phone'),
+                    'date_of_birth': user.get('date_of_birth'),
+                    'gender': user.get('gender'),
+                    'school_college': user.get('school_college'),
+                    'city': user.get('city'),
+                    'state': user.get('state'),
+                    'profile_completed': user.get('profile_completed', False),
+                    'created_at': user['created_at']
+                }
+            })
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/profile', methods=['POST'])
+def update_profile():
+    """Update user profile"""
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        
+        update_data = {
+            'phone': data.get('phone'),
+            'date_of_birth': data.get('date_of_birth'),
+            'gender': data.get('gender'),
+            'school_college': data.get('school_college'),
+            'city': data.get('city'),
+            'state': data.get('state'),
+            'profile_completed': True
+        }
+        
+        # Remove None values
+        update_data = {k: v for k, v in update_data.items() if v is not None}
+        
+        supabase = get_supabase()
+        response = supabase.table('users').update(update_data).eq('id', user_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Profile updated successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/quiz/start', methods=['POST'])
+def start_quiz():
+    """Start a new quiz session or resume existing"""
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        mode = data.get('mode')  # 'ssc' or 'hsc'
+        class_level = data.get('class_level')
+        
+        supabase = get_supabase()
+        
+        # Check for incomplete session
+        response = supabase.table('quiz_sessions')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .eq('mode', mode)\
+            .eq('is_completed', False)\
+            .execute()
+        
+        if response.data:
+            # Resume existing session
+            session = response.data[0]
+            return jsonify({
+                'success': True,
+                'session_id': session['id'],
+                'current_question': session['current_question'],
+                'total_questions': session['total_questions'],
+                'is_resume': True,
+                'answers': session.get('answers', [])
+            })
+        else:
+            # Create new session
+            new_session = {
+                'user_id': user_id,
+                'mode': mode,
+                'class_level': class_level,
+                'total_questions': 14,
+                'current_question': 0,
+                'is_completed': False,
+                'answers': []
+            }
+            
+            response = supabase.table('quiz_sessions').insert(new_session).execute()
+            session_id = response.data[0]['id']
+            
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'current_question': 0,
+                'total_questions': 14,
+                'is_resume': False
+            })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/quiz/save-progress', methods=['POST'])
+def save_quiz_progress():
+    """Save quiz progress"""
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        current_question = data.get('current_question')
+        answer = data.get('answer')
+        question_id = data.get('question_id')
+        
+        supabase = get_supabase()
+        
+        # Get current session
+        session_response = supabase.table('quiz_sessions')\
+            .select('answers')\
+            .eq('id', session_id)\
+            .execute()
+        
+        current_answers = session_response.data[0].get('answers', [])
+        
+        # Add new answer
+        current_answers.append({
+            'question_id': question_id,
+            'answer': answer,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        # Update session
+        update_data = {
+            'current_question': current_question,
+            'answers': current_answers
+        }
+        
+        supabase.table('quiz_sessions').update(update_data).eq('id', session_id).execute()
+        
+        # Also save to answers table
+        answer_data = {
+            'session_id': session_id,
+            'user_id': data.get('user_id'),
+            'question_id': question_id,
+            'answer': answer
+        }
+        supabase.table('answers').insert(answer_data).execute()
+        
+        return jsonify({'success': True, 'message': 'Progress saved'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/quiz/complete', methods=['POST'])
+def complete_quiz():
+    """Mark quiz as completed"""
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        final_score = data.get('score', 0)
+        
+        supabase = get_supabase()
+        
+        update_data = {
+            'is_completed': True,
+            'completed_at': datetime.now().isoformat(),
+            'score': final_score
+        }
+        
+        supabase.table('quiz_sessions').update(update_data).eq('id', session_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Quiz completed!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/quiz/history', methods=['GET'])
+def get_quiz_history():
+    """Get user's quiz history"""
+    try:
+        user_id = request.args.get('user_id')
+        
+        supabase = get_supabase()
+        response = supabase.table('quiz_sessions')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        history = []
+        for session in response.data:
+            history.append({
+                'id': session['id'],
+                'mode': session['mode'],
+                'class_level': session.get('class_level'),
+                'score': session.get('score', 0),
+                'total_questions': session['total_questions'],
+                'current_question': session['current_question'],
+                'is_completed': session['is_completed'],
+                'created_at': session['created_at'],
+                'completed_at': session.get('completed_at')
+            })
+        
+        return jsonify({'success': True, 'history': history})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/dashboard/stats', methods=['GET'])
+def get_dashboard_stats():
+    """Get dashboard statistics"""
+    try:
+        user_id = request.args.get('user_id')
+        
+        supabase = get_supabase()
+        
+        # Get total quizzes
+        sessions = supabase.table('quiz_sessions')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .execute()
+        
+        total_quizzes = len(sessions.data)
+        completed_quizzes = len([s for s in sessions.data if s['is_completed']])
+        incomplete_quizzes = total_quizzes - completed_quizzes
+        
+        # Calculate average score
+        completed_sessions = [s for s in sessions.data if s['is_completed']]
+        avg_score = sum(s.get('score', 0) for s in completed_sessions) / len(completed_sessions) if completed_sessions else 0
+        
+        return jsonify({
+            'success': True,
+            'stats': {
+                'total_quizzes': total_quizzes,
+                'completed_quizzes': completed_quizzes,
+                'incomplete_quizzes': incomplete_quizzes,
+                'average_score': round(avg_score, 2)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

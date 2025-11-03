@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { supabase } from '../services/supabase';
-import './AuthPage.css';
+import './static/AuthPage.css';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -55,14 +55,24 @@ function LoginPage() {
       });
 
       if (response.success) {
-        // Store user data
-        localStorage.setItem('userId', response.user.id);
-        localStorage.setItem('userName', response.user.username);
-        localStorage.setItem('userEmail', response.user.email);
-        localStorage.setItem('accessToken', response.session.access_token);
-        
-        // Redirect to mode selection
-        navigate('/mode-selection');
+      // Store user data in MULTIPLE formats for compatibility
+      const userData = {
+        id: response.user.id,
+        username: response.user.username,
+        email: response.user.email
+      };
+      
+      // Store as object (for QuestionPage & Dashboard)
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Also store individual values (for backward compatibility)
+      localStorage.setItem('userId', response.user.id);
+      localStorage.setItem('userName', response.user.username);
+      localStorage.setItem('userEmail', response.user.email);
+      localStorage.setItem('accessToken', response.session.access_token);
+
+      // Redirect to dashboard (not mode-selection)
+      navigate('/dashboard');
       }
     } catch (error) {
       setErrors({ 

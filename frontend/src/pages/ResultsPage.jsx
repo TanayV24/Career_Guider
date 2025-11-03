@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
-import './ResultsPage.css';
+import './static/ResultsPage.css';
 
 function ResultsPage() {
   const navigate = useNavigate();
