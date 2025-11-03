@@ -43,4 +43,3 @@ def create_app():
         return {'status': 'healthy'}, 200
     
     return app
-

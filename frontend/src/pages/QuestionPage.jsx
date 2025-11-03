@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import './static/QuestionPage.css';
 
+
 const MOTIVATIONAL_QUOTES = [
   "Your career is a journey, not a destination! 🚀",
   "Dream big, work hard, stay focused! 💪",
@@ -11,6 +12,8 @@ const MOTIVATIONAL_QUOTES = [
   "Success is not final, failure is not fatal! 🌟",
   "Believe in yourself and magic will happen! 🎯"
 ];
+
+
 
 function QuestionPage() {
   const navigate = useNavigate();
@@ -24,57 +27,67 @@ function QuestionPage() {
   const [sessionId, setSessionId] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   
+  
   const [showMotivational, setShowMotivational] = useState(true);
   const [motivationalQuote] = useState(
     MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]
   );
 
+  // Store first 2 answers temporarily
+  const [tempAnswers, setTempAnswers] = useState({});
+
   const userId = localStorage.getItem('userId') || 'guest_' + Date.now();
   const selectedMode = localStorage.getItem('selectedMode') || 'ssc';
   const classLevel = localStorage.getItem('classLevel') || '10';
+
 
   useEffect(() => {
     localStorage.setItem('userId', userId);
     initializeQuiz();
 
+
     const timer = setTimeout(() => {
       setShowMotivational(false);
     }, 3000);
 
+
     return () => clearTimeout(timer);
   }, []);
 
-  const initializeQuiz = async () => {
+
+    const initializeQuiz = async () => {
     try {
-      // Start or resume quiz session
-      const startResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          mode: selectedMode,
-          class_level: classLevel
-        })
-      });
-      
-      const startData = await startResponse.json();
-      
-      if (startData.success) {
-        setSessionId(startData.session_id);
-        setCurrentIndex(startData.current_question || 0);
-        setIsSaved(startData.is_resume || false);
-        
-        console.log(startData.is_resume ? 
-          '✅ Resuming quiz session' : 
-          '✅ New quiz session started'
-        );
-      }
-      
-      // Load questions
+      // Load questions FIRST
       const data = await api.getQuestions(selectedMode);
       setQuestions(data);
-      setLoading(false);
-      
+      console.log('✅ Questions loaded:', data.length);
+
+      const resumeSessionId = localStorage.getItem('resumeSessionId');
+
+      if (resumeSessionId) {
+        // Resuming specific session from dashboard
+        console.log('📂 Resuming session from dashboard:', resumeSessionId);
+
+        const sessionResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/get-session/${resumeSessionId}`);
+        const sessionData = await sessionResponse.json();
+
+        if (sessionData.success && sessionData.session) {
+          setSessionId(sessionData.session.id);
+          const resumeIndex = sessionData.session.current_question || 0;
+          setCurrentIndex(resumeIndex);
+          setIsSaved(true);
+          console.log('✅ Resumed at question:', resumeIndex + 1);
+          //alert(`You are currently on Question ${resumeIndex + 1}`);
+        }
+
+        localStorage.removeItem('resumeSessionId');
+        setLoading(false);
+      } else {
+        // DON'T call /quiz/start - it creates empty sessions!
+        // Just start fresh - session will be created after Q2
+        console.log('✅ Starting new quiz - session will be created after Q2');
+        setLoading(false);
+      }
     } catch (error) {
       console.error('❌ Initialize error:', error);
       alert('Error starting quiz. Please try again.');
@@ -82,11 +95,16 @@ function QuestionPage() {
     }
   };
 
+
+
+
+
   const handleAnswerChange = (value) => {
     setAnswer(value);
   };
 
-  const handleSubmit = async () => {
+
+    const handleSubmit = async () => {
     if (!answer.trim()) {
       alert('Please provide an answer!');
       return;
@@ -95,29 +113,67 @@ function QuestionPage() {
     setAnalyzing(true);
 
     try {
-      console.log('📝 Submitting answer:', answer);
+      const questionId = questions[currentIndex].id;
+      console.log(`📝 Submitting answer: ${answer}`);
 
-      // Save answer to database
-      const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/save-progress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          question_index: currentIndex,
-          question_id: questions[currentIndex].id,
-          answer: answer
-        })
-      });
-
-      const saveData = await saveResponse.json();
-      
-      if (saveData.success) {
-        console.log('✅ Answer saved to database');
+      // For Q1 - just store temporarily
+      if (currentIndex === 0) {
+        setTempAnswers({ [questionId]: answer });
+        console.log('💾 Stored Q1 temporarily');
         
-        // Update saved status
-        if (saveData.is_saved && !isSaved) {
+        // Just acknowledge (no DB call)
+        setTimeout(() => {
+          setCurrentIndex(1);
+          setAnswer('');
+          setAnalyzing(false);
+        }, 500);
+        return;
+      }
+      
+      // For Q2 - create session with both Q1 and Q2 answers
+      if (currentIndex === 1) {
+        const firstTwoAnswers = {
+          ...tempAnswers,
+          [questionId]: answer
+        };
+        
+        const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/save-answer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: null,
+            question_index: currentIndex,
+            question_id: questionId,
+            answer: answer,
+            first_two_answers: firstTwoAnswers,
+            user_id: userId,
+            mode: selectedMode,
+            class_level: classLevel
+          })
+        });
+
+        const saveData = await saveResponse.json();
+        if (saveData.success && saveData.session_id) {
+          setSessionId(saveData.session_id);
           setIsSaved(true);
-          console.log('✅ Session marked as saved (2+ questions answered)');
+          console.log('✅ Session created with ID:', saveData.session_id);
+        }
+      } else {
+        // Q3+ - save to existing session
+        const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/quiz/save-answer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            question_index: currentIndex,
+            question_id: questionId,
+            answer: answer
+          })
+        });
+
+        const saveData = await saveResponse.json();
+        if (saveData.success) {
+          console.log('✅ Answer saved');
         }
       }
 
@@ -143,16 +199,20 @@ function QuestionPage() {
     }
   };
 
+
+
   const completeQuiz = async () => {
     try {
-      await fetch(`${process.env.REACT_APP_API_URL}/quiz/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          score: score
-        })
-      });
+      if (sessionId) {
+        await fetch(`${process.env.REACT_APP_API_URL}/quiz/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            score: score
+          })
+        });
+      }
       
       console.log('✅ Quiz completed');
       navigate('/results');
@@ -162,6 +222,7 @@ function QuestionPage() {
     }
   };
 
+
   const handleBack = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
@@ -169,11 +230,13 @@ function QuestionPage() {
     }
   };
 
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && answer.trim()) {
       handleSubmit();
     }
   };
+
 
   if (loading) {
     return (
@@ -183,6 +246,7 @@ function QuestionPage() {
       </div>
     );
   }
+
 
   if (questions.length === 0) {
     return (
@@ -196,7 +260,9 @@ function QuestionPage() {
     );
   }
 
+
   const currentQuestion = questions[currentIndex];
+
 
   return (
     <div className="question-container">
@@ -209,6 +275,7 @@ function QuestionPage() {
         <div className="floating-shape shape-5"></div>
       </div>
 
+
       {/* Motivational Overlay */}
       {showMotivational && (
         <div className="motivational-overlay">
@@ -219,6 +286,7 @@ function QuestionPage() {
           </div>
         </div>
       )}
+
 
       {/* Question Card */}
       <div className="question-card">
@@ -233,6 +301,7 @@ function QuestionPage() {
           )}
         </div>
 
+
         <div className="progress-section">
           <div className="progress-text">
             Question {currentIndex + 1} of {questions.length}
@@ -245,9 +314,11 @@ function QuestionPage() {
           </div>
         </div>
 
+
         <div className="question-content">
           <div className="question-number-badge">Q{currentIndex + 1}</div>
           <h2 className="question-text">{currentQuestion.text}</h2>
+
 
           {(currentQuestion.type === 'choice' || currentQuestion.type === 'age_choice') && currentQuestion.options ? (
             <div className="choices">
@@ -279,6 +350,7 @@ function QuestionPage() {
           )}
         </div>
 
+
         <div className="question-actions">
           {currentIndex > 0 && (
             <button 
@@ -308,6 +380,7 @@ function QuestionPage() {
         </div>
       </div>
 
+
       {analyzing && (
         <div className="analyzing-overlay">
           <div className="analyzing-content">
@@ -319,5 +392,6 @@ function QuestionPage() {
     </div>
   );
 }
+
 
 export default QuestionPage;

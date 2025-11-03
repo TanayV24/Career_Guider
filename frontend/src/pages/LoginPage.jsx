@@ -40,22 +40,24 @@ function LoginPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const response = await api.login({
-        identifier: formData.identifier,
-        password: formData.password
-      });
+  try {
+    const response = await api.login({
+      identifier: formData.identifier,
+      password: formData.password
+    });
 
-      if (response.success) {
-      // Store user data in MULTIPLE formats for compatibility
+    console.log('Login response:', response);  // DEBUG
+
+    if (response.success) {
+      // Store user data
       const userData = {
         id: response.user.id,
         username: response.user.username,
@@ -69,19 +71,28 @@ function LoginPage() {
       localStorage.setItem('userId', response.user.id);
       localStorage.setItem('userName', response.user.username);
       localStorage.setItem('userEmail', response.user.email);
-      localStorage.setItem('accessToken', response.session.access_token);
 
-      // Redirect to dashboard (not mode-selection)
+      // FIX: Don't try to access session.access_token - we removed it!
+      // The backend no longer returns session tokens
+
+      // Redirect to dashboard
+      console.log('Redirecting to dashboard...');
       navigate('/dashboard');
-      }
-    } catch (error) {
+    } else {
       setErrors({ 
-        submit: error.response?.data?.error || 'Login failed. Please check your credentials.' 
+        submit: response.error || 'Login failed. Please check your credentials.' 
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    setErrors({ 
+      submit: error.message || 'Login failed. Please check your credentials.' 
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleGoogleLogin = async () => {
     try {
