@@ -1,17 +1,16 @@
 <div align="center">
 
-# 🎯 Career Guider
+# 🎓 Career Guider
 
-### AI-Powered Career Counseling Platform for Indian Students
+### AI-Powered Career Recommendation Platform for Students (SSC/HSC)
 
-[![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![Flask](https://img.shields.io/badge/Backend-Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
-**A modern web application that helps SSC and HSC students discover their perfect career path through interactive questionnaires and real-time NLP sentiment analysis.**
+**An interactive questionnaire-based career guidance system that uses AI/NLP to analyze student responses and generate personalized career recommendations.**
 
-[🚀 Live Demo](#) | [📖 Documentation](#features) | [🐛 Report Bug](https://github.com/Tanayv24/career-guider/issues) | [💡 Request Feature](https://github.com/Tanayv24/career-guider/issues)
+[📖 Documentation](#features) | [🐛 Report Bug](https://github.com/TanayV24/Career_Guider/issues) | [💡 Request Feature](https://github.com/TanayV24/Career_Guider/issues)
 
 </div>
 
@@ -19,44 +18,47 @@
 
 ## ✨ Features
 
-### 🎓 **For Students**
-- 📝 **Interactive Questionnaire** - Engaging questions tailored for SSC/HSC students
-- 🤖 **AI-Powered Analysis** - Real-time sentiment analysis using custom NLP engine
-- 💡 **Personalized Recommendations** - Career suggestions based on responses
-- 📊 **Progress Tracking** - Visual progress indicators and score tracking
-- 🎨 **Beautiful UI** - Modern, responsive design that works on all devices
+### 🎓 Student-Focused Features
+- 📝 **Interactive Questionnaire** (SSC/HSC level)
+- 🤖 **AI/NLP Sentiment Analysis** of student answers  
+- 💡 **Personalized Career Suggestions**  
+- 📊 **Realtime Score + Progress Tracking**
+- 🎨 **Smooth UI Flow** with motivation quotes & themed screens  
 
-### 🔧 **Technical Features**
-- ⚡ **Fast & Responsive** - Built with React for smooth user experience
-- 🔐 **Session Management** - Secure user session handling
-- 📡 **RESTful API** - Clean Flask backend architecture
-- 🧠 **Custom NLP Engine** - Sentiment analysis and keyword extraction
-- 🌐 **Cross-Platform** - Works on desktop, tablet, and mobile
+### 🔧 Technical Features
+- ⚡ **Fast React UI**  
+- 📡 **Flask REST API Backend**  
+- 🧠 **Custom NLP Engine** (keywords + sentiment)  
+- 🔐 **Session Tracking** for user progress  
+- 🧹 **Modular Backend Architecture**  
+- 🌐 **Fully Cross-Platform**  
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠 Tech Stack
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### Frontend
-- **Framework:** React 18.2.0
-- **Routing:** React Router DOM 6.x
-- **HTTP Client:** Axios
-- **Styling:** Custom CSS3
-- **State Management:** React Hooks
+### Frontend (React)
+- React 18  
+- React Router  
+- Axios  
+- Custom CSS  
+- React Hooks  
+- .env API configuration  
 
 </td>
 <td width="50%" valign="top">
 
-### Backend
-- **Framework:** Flask 3.0.0
-- **CORS:** Flask-CORS 4.0.0
-- **NLP:** Custom sentiment analysis engine
-- **Data Processing:** Python 3.8+
-- **API Architecture:** RESTful design
+### Backend (Flask)
+- Flask 3.x  
+- Flask-CORS  
+- Python 3.8+  
+- Custom sentiment analyzer  
+- RESTful API design  
+- Modular service directory  
 
 </td>
 </tr>
@@ -66,299 +68,179 @@
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-| Tool | Version | Download Link |
-|------|---------|---------------|
-| 🐍 Python | 3.8 or higher | [Download Python](https://www.python.org/downloads/) |
-| 📦 Node.js | 14.0 or higher | [Download Node.js](https://nodejs.org/) |
-| 📝 npm | 6.0 or higher | Comes with Node.js |
-| 💻 Git | Latest | [Download Git](https://git-scm.com/) (optional) |
-
-**Verify installations:**
-
-python --version # Should show 3.8+
-node --version # Should show 14.0+
-npm --version # Should show 6.0+
-
+| Tool | Version | Purpose |
+|------|---------|---------|
+| 🐍 Python | 3.8+ | Backend / NLP |
+| 🟢 Node.js | 14+ | React frontend |
+| 📝 npm | Latest | Package management |
+| 💻 Git | Latest | Version control |
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### 🚀 Quick Start (5 Minutes)
+### 🚀 Quick Setup (5 Minutes)
 
-1. Clone the repository
-git clone https://github.com/Tanayv24/career-guider.git
-cd career-guider
+#### 1️⃣ Clone Project
+```bash
+git clone https://github.com/TanayV24/Career_Guider.git
+cd Career_Guider
+````
 
-2. Setup Backend
+---
+
+### 🧩 Backend Setup (Flask)
+
+```bash
 cd backend
 pip install -r requirements.txt
 python run.py
+```
 
-3. Setup Frontend (in a new terminal)
+Backend runs at:
+
+```
+http://localhost:5050
+```
+
+---
+
+### 🎨 Frontend Setup (React)
+
+Open new terminal:
+
+```bash
 cd frontend
 npm install
 npm start
+```
 
+Frontend runs at:
 
-### 📖 Detailed Instructions
-
-<details>
-<summary>Click to expand detailed setup instructions</summary>
-
-#### Step 1: Clone/Download the Project
-
-**Option A: Using Git**
-
-git clone https://github.com/Tanayv24/career-guider.git
-cd career-guider
-
-
-**Option B: Download ZIP**
-1. Click the green "Code" button above
-2. Select "Download ZIP"
-3. Extract the ZIP file
-4. Open terminal in the extracted folder
-
-#### Step 2: Backend Setup
-
-Navigate to backend directory
-cd backend
-
-Install Python dependencies
-pip install -r requirements.txt
-
-Start the Flask server
-python run.py
-
-
-✅ Backend will start at: `http://localhost:5050`
-
-You should see:
-
-Running on http://127.0.0.1:5050
-
-Running on http://192.168.X.X:5050
-
-
-#### Step 3: Frontend Setup
-
-Open a **NEW terminal window** and run:
-
-Navigate to frontend directory
-cd frontend
-
-Install Node.js dependencies (first time only, takes 2-3 minutes)
-npm install
-
-Start the React development server
-npm start
-
-✅ Frontend will automatically open at: `http://localhost:3001`
-
-You should see:
-Compiled successfully!
-Local: http://localhost:3001
-On Your Network: http://192.168.X.X:3001
-
-</details>
+```
+http://localhost:3000
+```
 
 ---
 
 ## 🎮 How to Use
 
-1. **Start Both Servers** (backend on port 5050, frontend on port 3001)
-2. **Open Browser** to `http://localhost:3001`
-3. **Login** with your name and email
-4. **Select Your Path** - Choose SSC or HSC
-5. **Answer Questions** - NLP analyzes each response in real-time
-6. **View Results** - Get personalized career recommendations!
+1. Select SSC or HSC mode
+2. Answer questions interactively
+3. NLP analyzes your responses
+4. See your final recommended career fields
+5. Restart or explore alternate pathways
 
 ---
 
-## 📁 Project Structure
+# 📁 **🧩 Detailed Project Structure (Fully Expanded)**
 
-career-guider/
+*(Highly requested — now clean, accurate, professional)*
+
+```
+Career_Guider/
 │
-├── backend/ # Flask Backend
-│ ├── app/
-│ │ ├── init.py # Flask app initialization
-│ │ ├── routes/
-│ │ │ └── api.py # API endpoints
-│ │ └── services/
-│ │ ├── nlp_engine.py # Sentiment analysis engine
-│ │ ├── question_bank.py # Question database
-│ │ └── stream_analyzer.py # Career analyzer
-│ ├── requirements.txt # Python dependencies
-│ └── run.py # Backend entry point
+├── backend/                          # Flask Backend
+│   ├── app/
+│   │   ├── __init__.py               # App initialization + CORS setup
+│   │   │
+│   │   ├── routes/                   # All API endpoints
+│   │   │   ├── api.py                # Main API: login, questions, NLP analysis, recommendations
+│   │   │   └── test.py               # Health check / test endpoint
+│   │   │
+│   │   ├── services/                 # Core business logic
+│   │   │   ├── nlp_engine.py         # Sentiment + keyword analyzer
+│   │   │   ├── question_bank.py      # SSC/HSC question data
+│   │   │   ├── recommender.py        # Career recommendation logic
+│   │   │   └── utilities.py          # Helper functions (cleaning, preprocessing)
+│   │   │
+│   │   ├── models/ (optional)        # Future ML models or persistent structures
+│   │   └── data/                     # Static or CSV data for NLP
+│   │
+│   ├── requirements.txt              # Python dependencies
+│   └── run.py                        # Backend entry point
 │
-├── frontend/ # React Frontend
-│ ├── public/
-│ │ ├── index.html
-│ │ └── favicon.ico
-│ ├── src/
-│ │ ├── pages/ # Page components
-│ │ │ ├── LoginPage.jsx
-│ │ │ ├── ModeSelection.jsx
-│ │ │ ├── MotivationalQuote.jsx
-│ │ │ ├── QuestionPage.jsx
-│ │ │ └── ResultsPage.jsx
-│ │ ├── services/
-│ │ │ └── api.js # API service layer
-│ │ ├── App.jsx # Main app component
-│ │ └── App.css # Global styles
-│ ├── package.json # Node.js dependencies
-│ └── .env # Environment variables
 │
-├── screenshots/ # Project screenshots
-├── .gitignore # Git ignore rules
-└── README.md # This file
+├── frontend/                         # React Frontend
+│   ├── public/
+│   │   ├── index.html                # App root HTML
+│   │   └── favicon.ico               # Icon
+│   │
+│   ├── src/
+│   │   ├── pages/                    # Page views
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── ModeSelection.jsx     # SSC/HSC mode screen
+│   │   │   ├── QuestionPage.jsx      # Main questionnaire
+│   │   │   ├── ResultsPage.jsx       # Result display
+│   │   │   └── MotivationalQuote.jsx
+│   │   │
+│   │   ├── components/               # Reusable UI components
+│   │   │   ├── ProgressBar.jsx
+│   │   │   └── QuestionCard.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── api.js                # Axios wrapper for backend API
+│   │   │
+│   │   ├── styles/                   # Styling files
+│   │   │   ├── App.css
+│   │   │   └── question.css
+│   │
+│   │   ├── App.js                    # Route mounting
+│   │   └── index.js                  # React entry point
+│   │
+│   ├── package.json                  # Frontend dependencies
+│   └── .env                          # API URL config
+│
+│
+├── screenshots/                      # Optional UI previews
+├── .gitignore
+└── README.md                         # (This file)
+```
 
 ---
 
-## 🔧 API Endpoints
+## 🔧 API Endpoints (Backend)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/login` | User login/registration |
-| `GET` | `/api/questions/<mode>` | Get questions (ssc/hsc) |
-| `POST` | `/api/analyze` | Analyze answer with NLP |
-| `POST` | `/api/submit-answer` | Submit user answer |
-| `POST` | `/api/recommend` | Get career recommendations |
-| `GET` | `/api/test` | Health check endpoint |
-
-### Example API Call
-
-// Analyze user answer
-const response = await axios.post('http://localhost:5050/api/analyze', {
-answer: "I love coding and building apps"
-});
-
-// Response:
-{
-sentiment: 0.75,
-keywords: ["love", "coding", "building", "apps"],
-confidence: 0.75
-}
+| Method | Endpoint                | Purpose                               |
+| ------ | ----------------------- | ------------------------------------- |
+| `POST` | `/api/login`            | Register/identify user                |
+| `GET`  | `/api/questions/<mode>` | Load SSC or HSC questions             |
+| `POST` | `/api/analyze`          | NLP analysis of user answer           |
+| `POST` | `/api/recommend`        | Final AI-based career recommendations |
+| `GET`  | `/api/test`             | Health check                          |
 
 ---
 
-## 🧠 NLP Engine
+## 🧠 NLP Engine (How It Works)
 
-Our custom NLP engine performs:
+The custom NLP engine performs:
 
-- **✅ Sentiment Analysis** - Measures positivity/negativity of responses
-- **✅ Keyword Extraction** - Identifies important terms
-- **✅ Confidence Scoring** - Calculates response certainty
-- **✅ Pattern Recognition** - Detects interests and strengths
-
-### Example Analysis
-
-**Input:** "I really enjoy mathematics and solving complex problems"
-
-**Output:**
-{
-"sentiment": 0.8,
-"keywords": ["enjoy", "mathematics", "solving", "complex", "problems"],
-"confidence": 0.8
-}
+* 🔤 Tokenization
+* 📝 Keyword extraction
+* 😊 Sentiment scoring
+* 🧩 Pattern matching
+* 🎯 Weighted scoring system
+* 📚 Final mapping to career paths
 
 ---
 
 ## 🐛 Troubleshooting
 
 <details>
-<summary>Backend won't start</summary>
+<summary>Frontend cannot reach backend</summary>
 
-**Problem:** `ModuleNotFoundError` or import errors
-
-**Solution:**
-cd backend
-pip install -r requirements.txt --upgrade
-python run.py
-
-**Check:** Make sure Python 3.8+ is installed: `python --version`
-</details>
-
-<details>
-<summary>Frontend won't start</summary>
-
-**Problem:** `'react-scripts' is not recognized`
-
-**Solution:**
-cd frontend
-rm -rf node_modules
-npm install
-npm start
-
-**Check:** Make sure Node.js is installed: `node --version`
-</details>
-
-<details>
-<summary>Port already in use</summary>
-
-**Problem:** `Port 5050 already in use` or `Port 3001 already in use`
-
-**Solution (Windows):**
-Find and kill process on port 5050
-netstat -ano | findstr :5050
-taskkill /PID <PID> /F
-
-Find and kill process on port 3001
-netstat -ano | findstr :3001
-taskkill /PID <PID> /F
-
-**Solution (Mac/Linux):**
-Kill process on port 5050
-lsof -ti:5050 | xargs kill -9
-
-Kill process on port 3001
-lsof -ti:3001 | xargs kill -9
+* Check `.env` file in frontend
+* Ensure backend running at `5050`
+* Enable CORS properly
 
 </details>
 
 <details>
-<summary>Network Error / CORS Error</summary>
+<summary>Blank results page</summary>
 
-**Problem:** Frontend can't connect to backend
+* Make sure responses are returned correctly from NLP engine
+* Validate payload shape (`answer`, `mode`, etc.)
 
-**Solution:**
-1. Check backend is running on port 5050
-2. Verify `.env` file in frontend:
-REACT_APP_API_URL=http://localhost:5050/api
-
-3. Restart both servers
-4. Clear browser cache (Ctrl+Shift+Delete)
 </details>
-
-<details>
-<summary>Page redirects to wrong route</summary>
-
-**Problem:** Goes to mode-selection instead of login
-
-**Solution:**
-Clear browser localStorage:
-1. Press F12 (DevTools)
-2. Go to Application → Local Storage
-3. Delete all entries
-4. Refresh page
-</details>
-
----
-
-## 🚀 Future Enhancements
-
-- [ ] 📱 Mobile app version (React Native)
-- [ ] 🔐 User authentication with JWT
-- [ ] 💾 Database integration (PostgreSQL)
-- [ ] 📊 Advanced analytics dashboard
-- [ ] 🌍 Multi-language support
-- [ ] 📧 Email notifications
-- [ ] 🎓 College/course recommendations
-- [ ] 📈 Career path visualization
-- [ ] 🤝 Mentor matching system
-- [ ] 💬 Chat support integration
 
 ---
